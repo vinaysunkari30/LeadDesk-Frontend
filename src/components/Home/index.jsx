@@ -71,7 +71,7 @@ const Home = () => {
       <Navbar />
 
       {/* Hero + Form Section */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-5 md:px-6 py-8 md:py-13 lg:px-10 relative z-10">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-5 md:px-6 py-8 md:py-13 lg:px-10 mt-50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-5 lg:gap-18 items-center">
 
           {/* LEFT — Hero Content */}

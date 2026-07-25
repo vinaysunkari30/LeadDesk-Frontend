@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full px-5 py-4 md:px-10 md:py-5 flex justify-between items-center">
+    <nav className="w-full px-5 py-4 md:px-10 md:py-5 flex justify-between items-center fixed">
       {/* Logo */}
       <div
         className="flex items-center gap-2 cursor-pointer group"
