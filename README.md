@@ -79,13 +79,16 @@ LeadDesk/
 
 ---
 
-## 🔒 Auth Approach
+##🔒 Auth Approach
+Registration (POST /api/auth/register) — Hashes the admin password with bcrypt (10 salt rounds) and stores the      Admin document in MongoDB. Registration is intended to be run once to seed the initial admin account.
 
-1. **Registration** (`POST /api/auth/register`) — Hashes password with bcrypt (12 salt rounds), stores Admin document in MongoDB. Run once to seed the admin account.
-2. **Login** (`POST /api/auth/login`) — Verifies email + bcrypt password comparison, issues a **JWT** (7-day expiry) stored in an **httpOnly cookie** (not accessible via JS).
-3. **Session Check** (`GET /api/auth/me`) — On page load, the client calls this endpoint. The cookie is sent automatically by the browser; the server decodes and returns admin info. This enables session persistence across refreshes.
-4. **Logout** (`POST /api/auth/logout`) — Clears the httpOnly cookie server-side.
-5. **Protected Routes** — `authMiddleware.js` verifies the JWT on every protected API endpoint. The React `ProtectedRoute` component also gates the `/admin` page.
+Login (POST /api/auth/login) — Verifies the admin's email and password using bcrypt, then issues a JWT with a 7-day expiry. The frontend stores the JWT using js-cookie.
+
+Session Check (GET /api/auth/me) — When the application loads, the React client retrieves the JWT from the js-cookie cookie and sends it to the backend using the Authorization: Bearer <token> header. The server verifies the JWT and returns the authenticated admin's information. This allows the admin session to persist across page refreshes.
+
+Logout (POST /api/auth/logout) — The frontend removes the JWT from the js-cookie cookie, clearing the client-side authentication state.
+
+Protected Routes — authMiddleware.js verifies the JWT from the Authorization header before allowing access to protected API endpoints. The React ProtectedRoute component also prevents unauthenticated users from accessing the /admin page.
 
 ---
 
@@ -134,7 +137,7 @@ cd client && npm run dev
 ```
 
 - Public page: http://localhost:5173
-- Admin login: http://localhost:5173/admin/login
+- Admin login: http://localhost:5173/login
 - Admin dashboard: http://localhost:5173/admin
 - API: http://localhost:3000
 
@@ -172,8 +175,8 @@ cd client && npm run dev
 ## 📝 Test Credentials (after seeding)
 
 ```
-Email:    vinaysunkari@gmail.com
-Password: vinay sunkari
+Email:    leadDesk@gmail.com
+Password: Lead Desk Admin
       OR
 You can register as admin using http://localhost:3000/api/auth/register
 by giving necessary credentials like
