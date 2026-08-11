@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
-const API_BASE = "https://leaddesk-h4p6.onrender.com/";
+const API_BASE = "http://localhost:3000";
 
 const AuthContext = createContext(null);
 
@@ -12,14 +13,23 @@ export const AuthProvider = ({ children }) => {
   // Check existing session on mount
   useEffect(() => {
     const checkSession = async () => {
+      const token = Cookies.get("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       try {
         const res = await axios.get(`${API_BASE}/api/auth/me`, {
-          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (res.data.success) {
           setAdmin(res.data.admin);
         }
-      } catch {
+      } catch (e) {
+        console.log("ERROR", e)
         setAdmin(null);
       } finally {
         setLoading(false);
@@ -32,20 +42,19 @@ export const AuthProvider = ({ children }) => {
     const res = await axios.post(
       `${API_BASE}/api/auth/login`,
       { email, password },
-      { withCredentials: true }
     );
     if (res.data.success) {
+      Cookies.set("token", res.data.jwtToken, {
+        expires: 7,
+        secure: true,
+      })
       setAdmin(res.data.admin);
     }
     return res.data;
   };
 
   const logout = async () => {
-    await axios.post(
-      `${API_BASE}/api/auth/logout`,
-      {},
-      { withCredentials: true }
-    );
+    Cookies.remove("token");
     setAdmin(null);
   };
 

@@ -11,11 +11,11 @@ const Navbar = () => {
   const handleAdminAction = async () => {
     if (admin && isAdminPage) {
       await logout();
-      navigate("/admin/login");
+      navigate("/");
     } else if (admin) {
       navigate("/admin");
     } else {
-      navigate("/admin/login");
+      navigate("/login");
     }
   };
 

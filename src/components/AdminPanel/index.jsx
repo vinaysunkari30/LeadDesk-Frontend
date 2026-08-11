@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { ToastContainer, useToast } from "../Toast";
+import Cookies from "js-cookie";
 
-const API_BASE = "https://leaddesk-h4p6.onrender.com/";
+
+const API_BASE = "http://localhost:3000";
 
 // STATUS CONFIG
 const STATUS_CYCLE = { New: "Contacted", Contacted: "Closed", Closed: "New" };
@@ -47,7 +49,6 @@ const AdminPanel = () => {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
   const { toasts, addToast, removeToast } = useToast();
-
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -59,36 +60,45 @@ const AdminPanel = () => {
   const searchTimeout = useRef(null);
 
   // FETCH LEADS
-  const fetchLeads = useCallback(async (searchVal = "", statusVal = "") => {
+  const fetchLeads = async (search, statusFilter) => {
     setLoading(true);
     try {
+      const token = Cookies.get("token");
       const params = {};
-      if (searchVal.trim()) params.search = searchVal.trim();
-      if (statusVal) params.status = statusVal;
-
-      const res = await axios.get(`${API_BASE}/api/leads`, {
-        params,
-        withCredentials: true,
-      });
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+      if (statusFilter) {
+        params.status = statusFilter;
+      }
+      const res = await axios.get(
+        `${API_BASE}/api/leads`,
+        {
+          params,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (res.data.success) {
         setLeads(res.data.leads);
         setTotal(res.data.total);
       }
     } catch (err) {
+      console.error(err);
       if (err.response?.status === 401) {
-        navigate("/admin/login");
-      } else {
-        addToast("Failed to load leads.", "error");
+        Cookies.remove("token");
+        navigate("/login");
       }
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  };
 
   useEffect(() => {
-    fetchLeads(search, statusFilter);
-  }, [statusFilter]);
+    fetchLeads();
+  }, []);
 
   // Debounced search
   useEffect(() => {
@@ -97,18 +107,26 @@ const AdminPanel = () => {
       fetchLeads(search, statusFilter);
     }, 400);
     return () => clearTimeout(searchTimeout.current);
-  }, [search]);
+  }, [search, statusFilter]);
 
   // STATUS TOGGLE
   const handleStatusToggle = async (lead) => {
     const nextStatus = STATUS_CYCLE[lead.status];
     setUpdatingId(lead._id);
+    const token = Cookies.get("token")
     try {
       const res = await axios.put(
         `${API_BASE}/api/leads/${lead._id}`,
-        { status: nextStatus },
-        { withCredentials: true }
+        {
+          nextStatus,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       if (res.data.success) {
         setLeads((prev) =>
           prev.map((l) =>
@@ -126,10 +144,16 @@ const AdminPanel = () => {
 
   // DELETE LEAD
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this lead? This action cannot be undone.")) return;
     setDeletingId(id);
     try {
-      await axios.delete(`${API_BASE}/api/leads/${id}`, { withCredentials: true });
+      const token = Cookies.get("token")
+      const res = await axios.delete(`${API_BASE}/api/leads/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
       setLeads((prev) => prev.filter((l) => l._id !== id));
       setTotal((t) => t - 1);
       addToast("Lead deleted successfully.", "success");
@@ -143,7 +167,7 @@ const AdminPanel = () => {
   // LOGOUT
   const handleLogout = async () => {
     await logout();
-    navigate("/admin/login");
+    navigate("/");
   };
 
   // STATS
@@ -191,20 +215,20 @@ const AdminPanel = () => {
           </h1>
 
           {/* Right */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden md:flex items-center gap-1.5 text-slate-400 text-xs font-inter">
+          <div className="flex items-center gap-2 sm:gap-5">
+            <span className="hidden md:flex items-center gap-1.5 text-white text-sm font-inter font-medium">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {admin?.username || admin?.email}
             </span>
             <button
               id="admin-logout-btn"
               onClick={handleLogout}
-              className="flex items-center cursor-pointer gap-1.5 text-slate-400 hover:text-white text-sm font-inter px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all"
+              className="flex items-center gradient-btn hover:text-white cursor-pointer gap-1.5 text-white text-sm font-inter px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className="hidden sm:block">Logout</span>
+              <span className="hidden sm:block text-white">Logout</span>
             </button>
           </div>
         </div>
@@ -264,8 +288,8 @@ const AdminPanel = () => {
 
           {/* Refresh */}
           <button
-            onClick={() => fetchLeads(search, statusFilter)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:border-white/20 text-sm font-inter transition-all"
+            onClick={() => fetchLeads(setSearch(''), setStatusFilter(''))}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer border-white/10 text-slate-400 hover:text-white hover:border-white/20 text-sm font-inter transition-all"
           >
             <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -308,13 +332,13 @@ const AdminPanel = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/5">
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Name</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Email</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Budget</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Message</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Date</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Status</th>
-                      <th className="text-left px-5 py-3.5 text-slate-400 font-inter font-medium text-xs uppercase tracking-wider">Actions</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Name</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Email</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Budget</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Message</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Date</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Status</th>
+                      <th className="text-left px-5 py-3.5 text-slate-300 font-inter font-medium text-xs uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -369,7 +393,7 @@ const AdminPanel = () => {
                             id={`delete-btn-${lead._id}`}
                             onClick={() => handleDelete(lead._id)}
                             disabled={deletingId === lead._id}
-                            className="text-slate-600 cursor-pointer flex justify-center items-center w-full hover:text-rose-400 transition-colors disabled:opacity-50"
+                            className="text-slate-500 cursor-pointer flex justify-center items-center w-full hover:text-rose-400 transition-colors disabled:opacity-50"
                             title="Delete lead"
                           >
                             {deletingId === lead._id ? (

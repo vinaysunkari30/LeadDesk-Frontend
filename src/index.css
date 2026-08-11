@@ -188,14 +188,14 @@ body {
   overflow: hidden;
 }
 
-.gradient-btn::before {
+/* .gradient-btn::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
-}
+} */
 
 .gradient-btn:hover::before {
   opacity: 1;

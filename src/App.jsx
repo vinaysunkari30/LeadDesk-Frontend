@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!admin) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -32,7 +32,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/login" element={<AdminLogin />} />
         <Route
           path="/admin"
           element={

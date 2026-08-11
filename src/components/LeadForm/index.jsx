@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://leaddesk-h4p6.onrender.com/";
+const API_BASE = "http://localhost:3000/";
 
 const BUDGET_OPTIONS = [
   { value: "", label: "Select budget range..." },
@@ -79,7 +79,7 @@ const LeadForm = ({ onSuccess, onError }) => {
     setErrors({});
 
     try {
-      const res = await axios.post(`${API_BASE}/api/leads`, form);
+      const res = await axios.post(`${API_BASE}api/leads`, form);
       if (res.data.success) {
         setForm(initialForm);
         setTouched({});

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ToastContainer, useToast } from "../Toast";
+import Cookies from "js-cookie";
 
 const AdminLogin = () => {
   const { admin, login } = useAuth();
@@ -37,13 +38,13 @@ const AdminLogin = () => {
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
-    }
-
+        }
     setLoading(true);
     try {
       await login(form.email, form.password);
       navigate("/admin");
     } catch (err) {
+      console.log(err)
       const msg = err.response?.data?.message || "Login failed. Check your credentials.";
       addToast(msg, "error");
     } finally {
@@ -135,7 +136,7 @@ const AdminLogin = () => {
                 <button
                   type="button"
                   onClick={() => setShowPass((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 cursor-pointer -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                   tabIndex={-1}
                 >
                   {showPass ? (

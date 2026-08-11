@@ -1,6 +1,8 @@
 import Navbar from "../Navbar";
 import LeadForm from "../LeadForm";
 import { ToastContainer, useToast } from "../Toast";
+import { Navigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 // STAT CARD
 const StatCard = ({ value, label, icon }) => (
@@ -57,6 +59,9 @@ const Footer = () => (
 // HOME PAGE
 const Home = () => {
   const { toasts, addToast, removeToast } = useToast();
+
+  const token = Cookies.get("token")
+  token ? <Navigate to="/admin" /> : <Navigate to='/login' />
 
   return (
     <div className="min-h-screen bg-[#0a0f2c] grid-bg flex flex-col">
