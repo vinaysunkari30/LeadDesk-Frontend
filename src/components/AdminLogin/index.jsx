@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ToastContainer, useToast } from "../Toast";
+import Cookies from 'js-cookie'
 
 
 const AdminLogin = () => {
@@ -15,7 +16,8 @@ const AdminLogin = () => {
   const [showPass, setShowPass] = useState(false);
 
   // Already logged in
-  if (admin) return <Navigate to="/admin" replace />;
+  const token = Cookies.get('token')
+  if (admin && token) return <Navigate to="/admin" replace />;
 
   const validate = () => {
     const errs = {};
