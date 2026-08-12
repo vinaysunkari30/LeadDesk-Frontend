@@ -11,9 +11,8 @@ A full-stack lead capture and management platform built with **React + Tailwind 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, Vite, Tailwind CSS v4 |
-| Backend | Express 5, Node.js (ESM) |
 | Database | MongoDB Atlas (Mongoose) |
-| Auth | JWT (httpOnly cookies) + bcrypt |
+| Auth | JWT + bcrypt |
 | Routing | React Router DOM v7 |
 
 ---
@@ -23,29 +22,18 @@ A full-stack lead capture and management platform built with **React + Tailwind 
 ```
 LeadDesk/
 ├── client/                   # React frontend
-│   └── src/
-│       ├── components/
-│       │   ├── Home/         # Public landing page + lead form
-│       │   ├── LeadForm/     # Lead capture form (client + server validation)
-│       │   ├── AdminLogin/   # Admin login page
-│       │   ├── AdminPanel/   # Admin dashboard (leads table)
-│       │   ├── Navbar/       # Responsive navbar
-│       │   └── Toast/        # Toast notification system
-│       ├── context/
-│       │   └── AuthContext.jsx  # Auth state (JWT session management)
-│       └── App.jsx           # Routes + ProtectedRoute guard
-│
-└── server/                   # Express backend
-    ├── databaseConfig.js/
-    │   ├── dbConnection.js   # Mongoose connect
-    │   ├── schema.js         # Lead model
-    │   └── adminSchema.js    # Admin model
-    ├── middleware/
-    │   └── authMiddleware.js # JWT verification middleware
-    ├── routes/
-    │   ├── authRoutes.js     # /api/auth (login, logout, register, me)
-    │   └── leadRoutes.js     # /api/leads (CRUD)
-    └── server.js             # App entry point
+    └── src/
+        ├── components/
+        │   ├── Home/         # Public landing page + lead form
+        │   ├── LeadForm/     # Lead capture form (client + server validation)
+        │   ├── AdminLogin/   # Admin login page
+        │   ├── AdminPanel/   # Admin dashboard (leads table)
+        │   ├── Navbar/       # Responsive navbar
+        │   └── Toast/        # Toast notification system
+        ├── context/
+        │   └── AuthContext.jsx  # Auth state (JWT session management)
+        └── App.jsx           # Routes + ProtectedRoute guard
+
 ```
 
 ---
@@ -80,15 +68,21 @@ LeadDesk/
 ---
 
 ##🔒 Auth Approach
-Registration (POST /api/auth/register) — Hashes the admin password with bcrypt (10 salt rounds) and stores the      Admin document in MongoDB. Registration is intended to be run once to seed the initial admin account.
 
-Login (POST /api/auth/login) — Verifies the admin's email and password using bcrypt, then issues a JWT with a 7-day expiry. The frontend stores the JWT using js-cookie.
+Registration (POST /api/auth/register) — 
+Hashes the admin password with bcrypt (10 salt rounds) and stores the      Admin document in MongoDB. Registration is intended to be run once to seed the initial admin account.
 
-Session Check (GET /api/auth/me) — When the application loads, the React client retrieves the JWT from the js-cookie cookie and sends it to the backend using the Authorization: Bearer <token> header. The server verifies the JWT and returns the authenticated admin's information. This allows the admin session to persist across page refreshes.
+Login (POST /api/auth/login) — 
+Verifies the admin's email and password using bcrypt, then issues a JWT with a 7-day expiry. The frontend stores the JWT using js-cookie.
 
-Logout (POST /api/auth/logout) — The frontend removes the JWT from the js-cookie cookie, clearing the client-side authentication state.
+Session Check (GET /api/auth/me) — 
+When the application loads, the React client retrieves the JWT from the js-cookie cookie and sends it to the backend using the Authorization: Bearer <token> header. The server verifies the JWT and returns the authenticated admin's information. This allows the admin session to persist across page refreshes.
 
-Protected Routes — authMiddleware.js verifies the JWT from the Authorization header before allowing access to protected API endpoints. The React ProtectedRoute component also prevents unauthenticated users from accessing the /admin page.
+Logout (POST /api/auth/logout) — 
+The frontend removes the JWT from the js-cookie cookie, clearing the client-side authentication state.
+
+Protected Routes — 
+authMiddleware.js verifies the JWT from the Authorization header before allowing access to protected API endpoints. The React ProtectedRoute component also prevents unauthenticated users from accessing the /admin page.
 
 ---
 
@@ -97,9 +91,6 @@ Protected Routes — authMiddleware.js verifies the JWT from the Authorization h
 ### 1. Clone & Install
 
 ```bash
-# Server
-cd server
-npm install
 
 # Client
 cd ../client
@@ -119,20 +110,17 @@ CLIENT_URL=http://localhost:5173
 ### 3. Seed Admin Account
 
 ```bash
-# POST to http://localhost:3000/api/auth/register
-# Body: { "username": "Admin", "email": "admin@leaddesk.com", "password": "yourpassword" }
+POST to http://localhost:3000/api/auth/register
+Body: { "username": "Admin", "email": "admin@gmail.com", "password": "yourpassword" }
 curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"Admin","email":"admin@leaddesk.com","password":"Admin@123"}'
+  -d '{"username":"Admin","email":"admin@gmail.com","password":"Admin@123"}'
 ```
 
 ### 4. Run
 
 ```bash
-# Server (terminal 1)
-cd server && npm run dev
-
-# Client (terminal 2)
+# Client
 cd client && npm run dev
 ```
 
@@ -148,11 +136,11 @@ cd client && npm run dev
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | /api/auth/register | ❌ | Create admin account |
-| POST | /api/auth/login | ❌ | Login → sets cookie |
-| POST | /api/auth/logout | ❌ | Clears cookie |
+| POST | /api/auth/login | ❌ | Login |
+| POST | /api/auth/logout | ❌ | Logout |
 | GET | /api/auth/me | ✅ | Verify session |
 | POST | /api/leads | ❌ | Submit new lead |
-| GET | /api/leads | ✅ | List leads (search, filter) |
+| GET | /api/leads | ✅ | List leads |
 | PUT | /api/leads/:id | ✅ | Update lead status |
 | DELETE | /api/leads/:id | ✅ | Delete lead |
 
@@ -162,7 +150,7 @@ cd client && npm run dev
 
 - **Public landing page** with hero, stats, and feature list
 - **Lead form** with client-side + server-side validation
-- **Admin login** with JWT + bcrypt (httpOnly cookie)
+- **Admin login** with JWT + bcrypt
 - **Session persistence** (refresh stays logged in)
 - **Admin dashboard** with search (debounced), status filter
 - **Status toggle**: New → Contacted → Closed (cycles)
@@ -178,7 +166,7 @@ cd client && npm run dev
 Email:    leadDesk@gmail.com
 Password: Lead Desk Admin
       OR
-You can register as admin using https://lead-desk-teal-omega.vercel.app/api/auth/register
+You can register as admin using http://localhost:3000/api/auth/register
 by giving necessary credentials like
   username: 'Your Name'
   email: 'Your Email ID'

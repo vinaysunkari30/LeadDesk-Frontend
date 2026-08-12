@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ToastContainer, useToast } from "../Toast";
-import Cookies from "js-cookie";
+
 
 const AdminLogin = () => {
   const { admin, login } = useAuth();

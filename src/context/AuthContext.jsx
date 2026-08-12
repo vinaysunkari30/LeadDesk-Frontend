@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://leaddesk-h4p6.onrender.com";
 
 const AuthContext = createContext(null);
 

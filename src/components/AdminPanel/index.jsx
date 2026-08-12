@@ -6,7 +6,7 @@ import { ToastContainer, useToast } from "../Toast";
 import Cookies from "js-cookie";
 
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://leaddesk-h4p6.onrender.com";
 
 // STATUS CONFIG
 const STATUS_CYCLE = { New: "Contacted", Contacted: "Closed", Closed: "New" };
@@ -499,7 +499,7 @@ const AdminPanel = () => {
           href="https://digitalheroesco.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400/50 hover:text-blue-400 font-inter text-xs transition-colors"
+          className="text-blue-400/50 hover:text-blue-400 font-inter text-sm font-medium transition-colors"
         >
           Built for Digital Heroes Training Task
         </a>
