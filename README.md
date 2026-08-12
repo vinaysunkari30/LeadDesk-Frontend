@@ -178,7 +178,7 @@ cd client && npm run dev
 Email:    leadDesk@gmail.com
 Password: Lead Desk Admin
       OR
-You can register as admin using http://localhost:3000/api/auth/register
+You can register as admin using https://lead-desk-teal-omega.vercel.app/api/auth/register
 by giving necessary credentials like
   username: 'Your Name'
   email: 'Your Email ID'
