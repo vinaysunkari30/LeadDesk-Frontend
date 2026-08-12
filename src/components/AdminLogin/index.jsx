@@ -17,7 +17,7 @@ const AdminLogin = () => {
 
   // Already logged in
   const token = Cookies.get('token')
-  if (admin && token) return <Navigate to="/admin" replace />;
+  if (token) return <Navigate to="/admin" replace />;
 
   const validate = () => {
     const errs = {};
